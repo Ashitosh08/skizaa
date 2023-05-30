@@ -12,6 +12,7 @@ import Backdrop from '@mui/material/Backdrop'
 import Select from '@mui/material/Select'
 import { Close, MoreVert } from '@mui/icons-material'
 import { fetchClasses, deleteClass, createClass } from 'src/store/apps/class'
+import { fetchTeachers } from 'src/store/apps/teachers'
 
 const style = {
   position: 'absolute',
@@ -42,11 +43,13 @@ const Classes_home = () => {
 
   const dispatch = useDispatch()
   const classes = useSelector(state => state.classes.classes)
+  const teachers = useSelector(state => state.teachers.teachers)
   const loading = useSelector(state => state.classes.loading)
   const error = useSelector(state => state.classes.error)
 
   useEffect(() => {
     dispatch(fetchClasses())
+    dispatch(fetchTeachers())
   }, [dispatch])
 
   const handleClick = (event, index) => {
@@ -241,7 +244,11 @@ const Classes_home = () => {
                       onChange={handleChange}
                       label='Teacher'
                     >
-                      <MenuItem value='pankaj'>pankaj</MenuItem>
+                      {/* {teachers.map(teacher => (
+                        <MenuItem value={teacher.attributes.teacherName} key={teacher.id}>
+                          {teacher.attributes.teacherName}
+                        </MenuItem>
+                      ))} */}
                       <MenuItem value='suresh'>suresh</MenuItem>
                       <MenuItem value='mahesh'>mahesh</MenuItem>
                     </Select>

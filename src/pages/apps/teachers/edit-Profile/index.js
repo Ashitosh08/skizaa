@@ -23,14 +23,14 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { TagsInput } from 'react-tag-input-component'
-
+import { useRouter } from 'next/router'
 import { updateTeacher } from 'src/store/apps/teachers'
 
 const Teacher_Edit_Profile = () => {
   const [value, setValue] = useState(null)
 
   const [language, setLanguage] = useState(['English'])
-
+  const [teacher, setTeacher] = useState(null)
   const [fullName, setFullName] = useState('')
   const [gender, setGender] = useState('')
   const [age, setAge] = useState('')
@@ -44,42 +44,46 @@ const Teacher_Edit_Profile = () => {
   const [mobileNo, setMobileNo] = useState('')
   const [employeeType, setEmployeeType] = useState('')
   const [country, setCountry] = useState('USA')
-
+  const router = useRouter()
   const dispatch = useDispatch()
+  const { id } = router.query
 
-  const teacherId = useSelector(state => state.teachers.selectedTeacherId) // Assuming you have a selectedTeacherId state in your Redux store
+  // Assuming you have a selectedTeacherId state in your Redux store
 
-  // useEffect(() => {
-  //   const fetchTeacherData = async () => {
-  //     try {
-  //       const teacher = await fetchTeacherById(teacherId) // Fetch teacher data by ID using the service function
-  //       // Update the state with the fetched teacher data
-  //       setFullName(teacher.fullName)
-  //       setGender(teacher.gender)
-  //       setAge(teacher.age)
-  //       setDateOfBirth(teacher.dateOfBirth)
-  //       setAddress(teacher.address)
-  //       setEmail(teacher.email)
-  //       setExperience(teacher.experience)
-  //       setQualification(teacher.qualification)
-  //       setSubject(teacher.subject)
-  //       setSection(teacher.section)
-  //       setMobileNo(teacher.mobileNo)
-  //       setEmployeeType(teacher.employeeType)
-  //       setCountry(teacher.country)
-  //     } catch (error) {
-  //       console.error(error)
-  //     }
-  //   }
+  useEffect(() => {
+    const fetchTeacherData = async () => {
+      const teacherId = router.query.id
+      try {
+        const response = await fetch(`http://localhost:1337/api/teachers/${teacherId}`)
+        const data = await response.json()
+        setGender(data.data.attributes.gender)
+        // setTeacher(data.data.attributes)
+        setFullName(data.data.attributes.fullName)
+        setAge(data.data.attributes.age)
+        setDateOfBirth(data.data.attributes.dateOfBirth)
+        setAddress(data.data.attributes.address)
+        setEmail(data.data.attributes.email)
+        setExperience(data.data.attributes.experience)
 
-  //   if (teacherId) {
-  //     fetchTeacherData()
-  //   }
-  // }, [teacherId])
+        setQualification(data.data.attributes.qualification)
+        setSubject(data.data.attributes.subject)
+        setSection(data.data.attributes.class)
+        setMobileNo(data.data.attributes.mobileNo)
+        setEmployeeType(data.data.attributes.employeeType)
+        setCountry(data.data.attributes.country)
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    fetchTeacherData()
+  }, [router.query.id])
 
   const handleSave = () => {
+    const teacherId = router.query.id
+
     const teacherData = {
-      value,
+      id: teacherId,
       subject,
       language,
       gender,
@@ -91,7 +95,8 @@ const Teacher_Edit_Profile = () => {
       experience,
       country
     }
-    dispatch(updateTeacher(teacherData))
+    dispatch(updateTeacher({ id: teacherId, data: teacherData }))
+    router.push(`/apps/teachers`)
   }
 
   return (
@@ -183,7 +188,7 @@ const Teacher_Edit_Profile = () => {
                 <Typography>Subject</Typography>
               </Grid>
               <Grid item xs={10}>
-                <TagsInput value={subject} onChange={newTags => setSubject(newTags)} />
+                <TextField value={subject} fullWidth onChange={e => setSubject(e.target.value)} />
               </Grid>
 
               <Grid item xs={2} sx={{ p: 3 }}>

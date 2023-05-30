@@ -141,16 +141,22 @@ const Teachers_home = () => {
   }, [])
 
   const extractQualifications = teachers => {
+    if (!Array.isArray(teachers)) {
+      return [] // Return an empty array or handle the error appropriately
+    }
+
     const qualifications = teachers.map(teacher => teacher.qualification)
-    console.log(qualifications, 'qualifications')
     const uniqueQualifications = [...new Set(qualifications)]
 
     return uniqueQualifications
   }
 
   const extractEmployeeTypes = teachers => {
+    if (!Array.isArray(teachers)) {
+      return [] // Return an empty array or handle the error appropriately
+    }
+
     const employeeTypes = teachers.map(teacher => teacher.employeeType)
-    console.log(employeeTypes, 'employeeTypes')
     const uniqueEmployeeTypes = [...new Set(employeeTypes)]
 
     return uniqueEmployeeTypes
@@ -164,21 +170,23 @@ const Teachers_home = () => {
     setEmployeeType(event.target.value)
   }
 
-  const handleDeleteTeacher = async () => {
-    if (!selectedTeacherId) {
-      return
+  const handleDeleteTeacher = async teacherId => {
+    try {
+      setUpdateLoading(true)
+      await dispatch(deleteTeacher(teacherId))
+      dispatch(fetchTeachers()) // Fetch updated teachers list
+      setUpdateLoading(false)
+      handleCloseDelete()
+    } catch (error) {
+      console.log('Failed to delete teacher:', error)
     }
+  }
 
-    setUpdateLoading(true)
-
-    // Delete the class from the server using the deleteClass action
-    await dispatch(deleteTeacher(selectedTeacherId))
-
-    // Close the modal and reset the input fields
-
-    setSelectedTeacherId(null)
-
-    setUpdateLoading(false)
+  const navigateToEditProfile = id => {
+    router.push({
+      pathname: 'teachers/edit-Profile',
+      query: { id }
+    })
   }
 
   const handleClick = (event, id) => {
@@ -186,8 +194,6 @@ const Teachers_home = () => {
       setAnchorEl(event.currentTarget)
     } else if (id === 'modal-open') {
       setOpenModal(true)
-    } else if (id === 'delete-teacher') {
-      handleDeleteTeacher(event, id) // Pass event and teacherId
     }
   }
 
@@ -297,22 +303,13 @@ const Teachers_home = () => {
                     }}
                   >
                     <Stack spacing={3} sx={{ p: 3 }}>
-                      <Button
-                        varient='text'
-                        onClick={() => {
-                          router.push('teachers/edit-Profile')
-                          router.push({
-                            pathname: 'teachers/edit-Profile',
-                            query: { teacherId: teacher.id }
-                          })
-                        }}
-                      >
+                      <Button varient='text' onClick={() => navigateToEditProfile(teacher.id)}>
                         Edit Profile
                       </Button>
                       <Button
-                        varient='text'
+                        variant='text'
                         sx={{ color: '#FF0000' }}
-                        onClick={e => handleClick(e, 'delete-teacher')} // Pass event and 'delete-teacher' as the id
+                        onClick={() => handleDeleteTeacher()}
                         disabled={updateLoading}
                       >
                         Remove Teacher
@@ -354,8 +351,9 @@ const Teachers_home = () => {
                       name='fullName'
                       label='Full Name'
                       variant='outlined'
-                      value={fullName}
-                      onChange={e => setFullName(e.target.value)}
+
+                      // value={fullName}
+                      // onChange={e => setFullName(e.target.value)}
                     />
                   </FormControl>
                 </Grid>
